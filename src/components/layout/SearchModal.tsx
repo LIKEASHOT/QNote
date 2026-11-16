@@ -19,10 +19,11 @@ export const SearchModal: React.FC = () => {
     }
   }, [isSearchOpen]);
 
-  // Global shortcut Cmd+K / Esc
+  // Global shortcut Cmd+F (or Cmd+K) / Esc
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+      const isCmd = e.metaKey || e.ctrlKey;
+      if (isCmd && (e.key.toLowerCase() === 'f' || e.key.toLowerCase() === 'k')) {
         e.preventDefault();
         setSearchOpen(!isSearchOpen);
       } else if (e.key === 'Escape' && isSearchOpen) {

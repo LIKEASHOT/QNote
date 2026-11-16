@@ -1,3 +1,4 @@
+delete process.env.ELECTRON_RUN_AS_NODE;
 const { app, BrowserWindow, shell, ipcMain } = require('electron');
 const path = require('path');
 

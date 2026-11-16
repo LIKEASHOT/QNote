@@ -31,6 +31,7 @@ export const EditorView: React.FC<EditorViewProps> = ({ notebookId }) => {
   const notebook = getNotebook(notebookId);
 
   const [fontSize, setFontSize] = useState<number>(notebook?.fontSize || 16);
+  const [zoomLevel, setZoomLevel] = useState<number>(notebook?.zoomLevel || 1.0);
   const [outline, setOutline] = useState<OutlineItem[]>([]);
   const [activeHeadingId, setActiveHeadingId] = useState<string | null>(null);
   const [isMathOpen, setIsMathOpen] = useState(false);
@@ -169,10 +170,54 @@ export const EditorView: React.FC<EditorViewProps> = ({ notebookId }) => {
       }
       updateOutline(editor);
       setFontSize(notebook.fontSize || 16);
+      if (notebook.zoomLevel) {
+        setZoomLevel(notebook.zoomLevel);
+      }
     }
   }, [notebookId, editor, notebook, updateOutline]);
 
-  // Global Keyboard shortcuts: Cmd+1~6 for headings, Cmd+\ for outline toggle
+  // Handle Trackpad Two-Finger Pinch-to-Zoom (macOS wheel with ctrlKey or gesture events)
+  useEffect(() => {
+    const handleWheel = (e: WheelEvent) => {
+      // macOS trackpad pinch emits wheel event with ctrlKey = true
+      if (e.ctrlKey) {
+        e.preventDefault();
+        // Negative deltaY is pinch out (zoom in), positive deltaY is pinch in (zoom out)
+        const zoomDelta = -e.deltaY * 0.005;
+        setZoomLevel((prev) => {
+          const next = Math.round(Math.min(2.5, Math.max(0.6, prev + zoomDelta)) * 100) / 100;
+          return next;
+        });
+      }
+    };
+
+    const handleGestureStart = (e: Event) => {
+      e.preventDefault();
+    };
+
+    const handleGestureChange = (e: any) => {
+      e.preventDefault();
+      if (e.scale) {
+        setZoomLevel((prev) => {
+          const factor = e.scale > 1 ? 1.02 : 0.98;
+          const next = Math.round(Math.min(2.5, Math.max(0.6, prev * factor)) * 100) / 100;
+          return next;
+        });
+      }
+    };
+
+    window.addEventListener('wheel', handleWheel, { passive: false });
+    window.addEventListener('gesturestart', handleGestureStart, { passive: false });
+    window.addEventListener('gesturechange', handleGestureChange, { passive: false });
+
+    return () => {
+      window.removeEventListener('wheel', handleWheel);
+      window.removeEventListener('gesturestart', handleGestureStart);
+      window.removeEventListener('gesturechange', handleGestureChange);
+    };
+  }, []);
+
+  // Global Keyboard shortcuts: Cmd+1~6 for headings, Cmd+\ for outline toggle, Cmd +/-/0 for zoom
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const isCmd = e.metaKey || e.ctrlKey;
@@ -185,10 +230,19 @@ export const EditorView: React.FC<EditorViewProps> = ({ notebookId }) => {
           editor.chain().focus().toggleHeading({ level }).run();
         }
       } else if (e.key === '0') {
-        if (editor?.isFocused) {
-          e.preventDefault();
-          editor.chain().focus().setParagraph().run();
+        e.preventDefault();
+        if (isCmd && !editor?.isFocused) {
+          setZoomLevel(1.0);
+        } else if (editor?.isFocused) {
+          // If in editor, reset zoom or set paragraph
+          setZoomLevel(1.0);
         }
+      } else if (e.key === '=' || e.key === '+') {
+        e.preventDefault();
+        setZoomLevel((prev) => Math.min(2.5, Math.round((prev + 0.1) * 10) / 10));
+      } else if (e.key === '-') {
+        e.preventDefault();
+        setZoomLevel((prev) => Math.max(0.6, Math.round((prev - 0.1) * 10) / 10));
       } else if (e.key === '\\') {
         e.preventDefault();
         toggleOutline();
@@ -316,12 +370,15 @@ export const EditorView: React.FC<EditorViewProps> = ({ notebookId }) => {
         <div
           ref={editorContainerRef}
           onScroll={handleScroll}
-          className="flex-1 overflow-y-auto px-6 sm:px-12 md:px-20 py-10"
+          className="flex-1 overflow-auto px-6 sm:px-12 md:px-20 py-10 relative"
         >
           {/* Centered Parchment Paper Document Layout */}
           <div
-            className="max-w-[860px] mx-auto min-h-[85vh] bg-white rounded-2xl p-8 sm:p-14 border border-[#E8DFD1] shadow-2xs transition-all"
-            style={{ fontSize: `${fontSize}px` }}
+            className="max-w-[860px] mx-auto min-h-[85vh] bg-white rounded-2xl p-8 sm:p-14 border border-[#E8DFD1] shadow-2xs transition-all duration-75 origin-top"
+            style={{
+              fontSize: `${fontSize}px`,
+              zoom: zoomLevel,
+            }}
           >
             {/* Bubble Menu for text selection */}
             {editor && <BubbleMenuToolbar editor={editor} />}
@@ -334,6 +391,35 @@ export const EditorView: React.FC<EditorViewProps> = ({ notebookId }) => {
           <div className="h-32 flex items-center justify-center text-[11px] text-[#C4B8A5]">
             ~ QNote 暖纸长卷·笔耕不辍 ~
           </div>
+        </div>
+
+        {/* Floating Zoom Indicator & Control Pill */}
+        <div className="absolute bottom-5 right-6 z-20 flex items-center space-x-1 bg-white/90 backdrop-blur-md px-2 py-1 rounded-xl border border-[#E8DFD1] shadow-md text-xs select-none transition-all hover:bg-white">
+          <button
+            onClick={() => setZoomLevel((prev) => Math.max(0.6, Math.round((prev - 0.1) * 10) / 10))}
+            className="w-5 h-5 flex items-center justify-center rounded text-[#847D72] hover:text-[#38332B] hover:bg-[#F3EBDD] font-bold"
+            title="缩小 (Cmd - / 触控板捏合)"
+          >
+            -
+          </button>
+          <button
+            onClick={() => setZoomLevel(1.0)}
+            className={`px-1.5 py-0.5 rounded font-mono text-[11px] transition-colors ${
+              zoomLevel !== 1.0
+                ? 'bg-[#FAF0ED] text-[#C97B63] font-semibold hover:bg-[#F5E5E0]'
+                : 'text-[#58544E] hover:text-[#38332B]'
+            }`}
+            title="点击重置为 100% (Cmd 0 / 触控板双指缩放)"
+          >
+            {Math.round(zoomLevel * 100)}%
+          </button>
+          <button
+            onClick={() => setZoomLevel((prev) => Math.min(2.5, Math.round((prev + 0.1) * 10) / 10))}
+            className="w-5 h-5 flex items-center justify-center rounded text-[#847D72] hover:text-[#38332B] hover:bg-[#F3EBDD] font-bold"
+            title="放大 (Cmd + / 触控板张开)"
+          >
+            +
+          </button>
         </div>
       </div>
 

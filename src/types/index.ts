@@ -8,6 +8,7 @@ export interface Notebook {
   updatedAt: number;
   content: string; // Markdown or HTML string
   fontSize?: number; // e.g. 16
+  zoomLevel?: number; // e.g. 1.0 (50% - 250%)
   alignment?: 'left' | 'center' | 'right';
   headingsCount?: number;
 }

@@ -120,12 +120,12 @@ export const TitleBar: React.FC = () => {
         <button
           onClick={toggleSearch}
           className="app-no-drag flex items-center space-x-1.5 px-2 py-1 rounded-lg bg-white/70 hover:bg-white text-[#58544E] hover:text-[#38332B] border border-[#E8DFD1] text-xs transition-all shadow-2xs"
-          title="全局快速搜索 (Cmd+K)"
+          title="全局快速搜索 (Cmd+F)"
         >
           <Search className="w-3 h-3 text-[#847D72]" />
           <span className="hidden sm:inline text-[11px] text-[#847D72]">搜索</span>
           <kbd className="hidden sm:inline-block text-[9px] bg-[#F3EBDD] px-1 py-0.2 rounded text-[#847D72] font-mono">
-            ⌘K
+            ⌘F
           </kbd>
         </button>
 
