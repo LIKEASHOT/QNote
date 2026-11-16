@@ -1,0 +1,234 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --claude-bg: #FAF7F2;
+    --claude-cream: #F3EBDD;
+    --claude-card: #FFFFFF;
+    --claude-border: #E8DFD1;
+    --claude-border-light: #F0E9DF;
+    --claude-text: #38332B;
+    --claude-text-sec: #58544E;
+    --claude-clay: #C97B63;
+  }
+
+  body {
+    background-color: var(--claude-bg);
+    color: var(--claude-text);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+/* 纸质滚动条样式 (Warm Parchment Scrollbar) */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #DDD3C3;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #C4B8A5;
+}
+
+/* TipTap Editor Styling */
+.app-drag {
+  -webkit-app-region: drag;
+}
+
+.app-no-drag {
+  -webkit-app-region: no-drag;
+}
+
+.tiptap {
+  outline: none !important;
+  color: #38332B;
+  min-height: 500px;
+}
+
+.tiptap p {
+  margin-bottom: 0.85em;
+  line-height: 1.75;
+}
+
+.tiptap h1 {
+  font-size: 1.85rem;
+  font-weight: 700;
+  color: #38332B;
+  margin-top: 1.6em;
+  margin-bottom: 0.6em;
+  line-height: 1.3;
+  letter-spacing: -0.02em;
+  border-bottom: 1px solid #F0E9DF;
+  padding-bottom: 0.3em;
+}
+
+.tiptap h2 {
+  font-size: 1.45rem;
+  font-weight: 650;
+  color: #38332B;
+  margin-top: 1.4em;
+  margin-bottom: 0.5em;
+  line-height: 1.35;
+  letter-spacing: -0.01em;
+}
+
+.tiptap h3 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #38332B;
+  margin-top: 1.2em;
+  margin-bottom: 0.4em;
+  line-height: 1.4;
+}
+
+.tiptap h4, .tiptap h5, .tiptap h6 {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #58544E;
+  margin-top: 1em;
+  margin-bottom: 0.3em;
+}
+
+.tiptap blockquote {
+  border-left: 3px solid #C97B63;
+  padding-left: 1rem;
+  margin-left: 0;
+  margin-right: 0;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+  color: #58544E;
+  font-style: italic;
+  background-color: #FAF0ED;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  border-radius: 0 8px 8px 0;
+}
+
+.tiptap ul {
+  list-style-type: disc;
+  padding-left: 1.5rem;
+  margin-bottom: 0.85em;
+}
+
+.tiptap ol {
+  list-style-type: decimal;
+  padding-left: 1.5rem;
+  margin-bottom: 0.85em;
+}
+
+.tiptap li {
+  margin-bottom: 0.25em;
+  line-height: 1.7;
+}
+
+.tiptap hr {
+  border: none;
+  border-top: 1px solid #E8DFD1;
+  margin: 2rem 0;
+}
+
+/* TipTap Tables */
+.tiptap table {
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+  table-layout: fixed;
+  width: 100%;
+  overflow: hidden;
+  border-radius: 8px;
+  border: 1px solid #E8DFD1;
+  background-color: #FFFFFF;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+}
+
+.tiptap table td,
+.tiptap table th {
+  min-width: 1em;
+  border: 1px solid #E8DFD1;
+  padding: 8px 12px;
+  vertical-align: top;
+  box-sizing: border-box;
+  position: relative;
+  text-align: left;
+  font-size: 0.9em;
+}
+
+.tiptap table th {
+  font-weight: 600;
+  text-align: left;
+  background-color: #FAF7F2;
+  color: #38332B;
+}
+
+.tiptap table .selectedCell:after {
+  z-index: 2;
+  position: absolute;
+  content: "";
+  left: 0; right: 0; top: 0; bottom: 0;
+  background: rgba(201, 123, 99, 0.15);
+  pointer-events: none;
+}
+
+/* Code Blocks */
+.tiptap pre {
+  background: #2C2723;
+  color: #F8F2EF;
+  font-family: "JetBrains Mono", "SF Mono", Menlo, Consolas, monospace;
+  padding: 1rem 1.25rem;
+  border-radius: 10px;
+  margin: 1.2rem 0;
+  overflow-x: auto;
+  font-size: 0.88rem;
+  line-height: 1.6;
+  border: 1px solid #48413A;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.tiptap pre code {
+  color: inherit;
+  padding: 0;
+  background: none;
+  font-size: 0.88rem;
+}
+
+.tiptap code {
+  background-color: #F3EBDD;
+  color: #A45842;
+  font-family: "JetBrains Mono", "SF Mono", Menlo, Consolas, monospace;
+  font-size: 0.85em;
+  padding: 0.15em 0.4em;
+  border-radius: 4px;
+  border: 1px solid #E8DFD1;
+}
+
+/* TipTap Images */
+.tiptap img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  border: 1px solid #E8DFD1;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+  margin: 1.2rem 0;
+  display: block;
+}
+
+/* Placeholder */
+.tiptap p.is-editor-empty:first-child::before {
+  color: #C4B8A5;
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}

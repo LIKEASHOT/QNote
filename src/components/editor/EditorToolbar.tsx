@@ -1,0 +1,236 @@
+import React from 'react';
+import {
+  Heading1,
+  Heading2,
+  Heading3,
+  Bold,
+  Italic,
+  AlignLeft,
+  AlignCenter,
+  AlignRight,
+  Code2,
+  Table as TableIcon,
+  Image as ImageIcon,
+  Sigma,
+  Quote,
+  Minus,
+  Plus,
+} from 'lucide-react';
+import { Editor } from '@tiptap/react';
+
+interface EditorToolbarProps {
+  editor: Editor | null;
+  fontSize: number;
+  onFontSizeChange: (newSize: number) => void;
+  onInsertImage: () => void;
+  onInsertMath: () => void;
+  onInsertCallout: () => void;
+}
+
+export const EditorToolbar: React.FC<EditorToolbarProps> = ({
+  editor,
+  fontSize,
+  onFontSizeChange,
+  onInsertImage,
+  onInsertMath,
+  onInsertCallout,
+}) => {
+  if (!editor) return null;
+
+  return (
+    <div className="sticky top-0 z-20 bg-[#FAF7F2]/95 backdrop-blur-sm border-b border-[#E8DFD1] px-4 py-2 flex items-center justify-between flex-wrap gap-2 text-xs select-none">
+      {/* Left: Headings & Typography */}
+      <div className="flex items-center space-x-1">
+        {/* H1 */}
+        <button
+          onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
+          className={`p-1.5 rounded-lg border transition-all ${
+            editor.isActive('heading', { level: 1 })
+              ? 'bg-[#FAF0ED] text-[#C97B63] border-[#F0D5CD] font-bold'
+              : 'text-[#58544E] hover:bg-[#F3EBDD] border-transparent'
+          }`}
+          title="一级标题 (Cmd+1)"
+        >
+          <Heading1 className="w-4 h-4" />
+        </button>
+
+        {/* H2 */}
+        <button
+          onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+          className={`p-1.5 rounded-lg border transition-all ${
+            editor.isActive('heading', { level: 2 })
+              ? 'bg-[#FAF0ED] text-[#C97B63] border-[#F0D5CD] font-bold'
+              : 'text-[#58544E] hover:bg-[#F3EBDD] border-transparent'
+          }`}
+          title="二级标题 (Cmd+2)"
+        >
+          <Heading2 className="w-4 h-4" />
+        </button>
+
+        {/* H3 */}
+        <button
+          onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
+          className={`p-1.5 rounded-lg border transition-all ${
+            editor.isActive('heading', { level: 3 })
+              ? 'bg-[#FAF0ED] text-[#C97B63] border-[#F0D5CD] font-bold'
+              : 'text-[#58544E] hover:bg-[#F3EBDD] border-transparent'
+          }`}
+          title="三级标题 (Cmd+3)"
+        >
+          <Heading3 className="w-4 h-4" />
+        </button>
+
+        <div className="h-4 w-[1px] bg-[#E8DFD1] mx-1" />
+
+        {/* Bold */}
+        <button
+          onClick={() => editor.chain().focus().toggleBold().run()}
+          className={`p-1.5 rounded-lg border transition-all ${
+            editor.isActive('bold')
+              ? 'bg-[#FAF0ED] text-[#C97B63] border-[#F0D5CD]'
+              : 'text-[#58544E] hover:bg-[#F3EBDD] border-transparent'
+          }`}
+          title="粗体 (Cmd+B)"
+        >
+          <Bold className="w-3.5 h-3.5" />
+        </button>
+
+        {/* Italic */}
+        <button
+          onClick={() => editor.chain().focus().toggleItalic().run()}
+          className={`p-1.5 rounded-lg border transition-all ${
+            editor.isActive('italic')
+              ? 'bg-[#FAF0ED] text-[#C97B63] border-[#F0D5CD]'
+              : 'text-[#58544E] hover:bg-[#F3EBDD] border-transparent'
+          }`}
+          title="斜体 (Cmd+I)"
+        >
+          <Italic className="w-3.5 h-3.5" />
+        </button>
+
+        <div className="h-4 w-[1px] bg-[#E8DFD1] mx-1" />
+
+        {/* Alignment */}
+        <button
+          onClick={() => editor.chain().focus().setTextAlign('left').run()}
+          className={`p-1.5 rounded-lg border transition-all ${
+            editor.isActive({ textAlign: 'left' })
+              ? 'bg-[#FAF0ED] text-[#C97B63] border-[#F0D5CD]'
+              : 'text-[#58544E] hover:bg-[#F3EBDD] border-transparent'
+          }`}
+          title="居左对齐"
+        >
+          <AlignLeft className="w-3.5 h-3.5" />
+        </button>
+
+        <button
+          onClick={() => editor.chain().focus().setTextAlign('center').run()}
+          className={`p-1.5 rounded-lg border transition-all ${
+            editor.isActive({ textAlign: 'center' })
+              ? 'bg-[#FAF0ED] text-[#C97B63] border-[#F0D5CD]'
+              : 'text-[#58544E] hover:bg-[#F3EBDD] border-transparent'
+          }`}
+          title="居中对齐"
+        >
+          <AlignCenter className="w-3.5 h-3.5" />
+        </button>
+
+        <button
+          onClick={() => editor.chain().focus().setTextAlign('right').run()}
+          className={`p-1.5 rounded-lg border transition-all ${
+            editor.isActive({ textAlign: 'right' })
+              ? 'bg-[#FAF0ED] text-[#C97B63] border-[#F0D5CD]'
+              : 'text-[#58544E] hover:bg-[#F3EBDD] border-transparent'
+          }`}
+          title="居右对齐"
+        >
+          <AlignRight className="w-3.5 h-3.5" />
+        </button>
+      </div>
+
+      {/* Middle: Font size adjuster */}
+      <div className="flex items-center space-x-1 bg-white px-2 py-0.5 rounded-lg border border-[#E8DFD1] shadow-2xs">
+        <button
+          onClick={() => onFontSizeChange(Math.max(12, fontSize - 1))}
+          className="p-1 hover:bg-[#FAF7F2] rounded text-[#847D72] hover:text-[#38332B]"
+          title="减小字号"
+        >
+          <Minus className="w-3 h-3" />
+        </button>
+        <span className="text-[11px] font-mono px-1.5 text-[#38332B]">
+          {fontSize}px
+        </span>
+        <button
+          onClick={() => onFontSizeChange(Math.min(24, fontSize + 1))}
+          className="p-1 hover:bg-[#FAF7F2] rounded text-[#847D72] hover:text-[#38332B]"
+          title="增大字号"
+        >
+          <Plus className="w-3 h-3" />
+        </button>
+      </div>
+
+      {/* Right: Rich Inserts (Code, Table, LaTeX, Callout, Image) */}
+      <div className="flex items-center space-x-1">
+        {/* Code Block */}
+        <button
+          onClick={() => editor.chain().focus().toggleCodeBlock().run()}
+          className={`flex items-center space-x-1 px-2 py-1 rounded-lg border transition-all ${
+            editor.isActive('codeBlock')
+              ? 'bg-[#FAF0ED] text-[#C97B63] border-[#F0D5CD]'
+              : 'text-[#58544E] hover:bg-[#F3EBDD] border-transparent'
+          }`}
+          title="插入代码块"
+        >
+          <Code2 className="w-3.5 h-3.5" />
+          <span className="text-[11px]">代码</span>
+        </button>
+
+        {/* Table */}
+        <button
+          onClick={() =>
+            editor
+              .chain()
+              .focus()
+              .insertTable({ rows: 3, cols: 3, withHeaderRow: true })
+              .run()
+          }
+          className="flex items-center space-x-1 px-2 py-1 rounded-lg border border-transparent hover:bg-[#F3EBDD] text-[#58544E] transition-all"
+          title="插入暖纸表格"
+        >
+          <TableIcon className="w-3.5 h-3.5" />
+          <span className="text-[11px]">表格</span>
+        </button>
+
+        {/* LaTeX Math */}
+        <button
+          onClick={onInsertMath}
+          className="flex items-center space-x-1 px-2 py-1 rounded-lg border border-transparent hover:bg-[#F3EBDD] text-[#58544E] transition-all"
+          title="插入数学公式 (KaTeX)"
+        >
+          <Sigma className="w-3.5 h-3.5" />
+          <span className="text-[11px]">公式</span>
+        </button>
+
+        {/* Callout */}
+        <button
+          onClick={onInsertCallout}
+          className="flex items-center space-x-1 px-2 py-1 rounded-lg border border-transparent hover:bg-[#F3EBDD] text-[#58544E] transition-all"
+          title="插入重点笔记提示块"
+        >
+          <Quote className="w-3.5 h-3.5" />
+          <span className="text-[11px]">引注</span>
+        </button>
+
+        {/* Image */}
+        <button
+          onClick={onInsertImage}
+          className="flex items-center space-x-1 px-2 py-1 rounded-lg bg-[#FAF0ED] hover:bg-[#F5E5E0] text-[#A45842] border border-[#F0D5CD] transition-all"
+          title="插入或粘贴图片"
+        >
+          <ImageIcon className="w-3.5 h-3.5" />
+          <span className="text-[11px]">图片</span>
+        </button>
+      </div>
+    </div>
+  );
+};
