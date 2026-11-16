@@ -14,6 +14,7 @@ import { Sidebar } from '../layout/Sidebar';
 import { EditorToolbar } from './EditorToolbar';
 import { BubbleMenuToolbar } from './BubbleMenuToolbar';
 import { MathModal } from './MathModal';
+import { MathBlock, MathInline } from './extensions/MathExtension';
 import { useTabStore } from '../../stores/useTabStore';
 import { useNotebookStore } from '../../stores/useNotebookStore';
 import { OutlineItem } from '../../types';
@@ -84,6 +85,8 @@ export const EditorView: React.FC<EditorViewProps> = ({ notebookId }) => {
       TextAlign.configure({
         types: ['heading', 'paragraph'],
       }),
+      MathBlock,
+      MathInline,
       Placeholder.configure({
         placeholder: '在此书写你的长卷笔记... (支持 Cmd+1~3 标题，代码/表格/图片直接粘贴)',
       }),
@@ -439,9 +442,15 @@ export const EditorView: React.FC<EditorViewProps> = ({ notebookId }) => {
         onInsert={(formula, isBlock) => {
           if (editor) {
             if (isBlock) {
-              editor.chain().focus().insertContent(`<p>$$\n${formula}\n$$</p>`).run();
+              editor.chain().focus().insertContent({
+                type: 'mathBlock',
+                attrs: { latex: formula },
+              }).run();
             } else {
-              editor.chain().focus().insertContent(`$${formula}$`).run();
+              editor.chain().focus().insertContent({
+                type: 'mathInline',
+                attrs: { latex: formula },
+              }).run();
             }
           }
         }}

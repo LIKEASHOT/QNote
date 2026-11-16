@@ -99,11 +99,11 @@ const INITIAL_PAPER_CONTENT = `
 </blockquote>
 
 <h2>1. 缩放点积注意力 (Scaled Dot-Product Attention)</h2>
-<p>给定查询矩阵 $Q$、键矩阵 $K$ 和值矩阵 $V$，缩放点积注意力的计算公式定义如下：</p>
+<p>给定查询矩阵 <span data-katex-display="inline" data-latex="Q"></span>、键矩阵 <span data-katex-display="inline" data-latex="K"></span> 和值矩阵 <span data-katex-display="inline" data-latex="V"></span>，缩放点积注意力的计算公式定义如下：</p>
 
-<p>$$\\text{Attention}(Q, K, V) = \\text{softmax}\\left(\\frac{Q K^T}{\\sqrt{d_k}}\\right) V$$</p>
+<div data-katex-display="block" data-latex="\text{Attention}(Q, K, V) = \text{softmax}\left(\frac{Q K^T}{\sqrt{d_k}}\right) V"></div>
 
-<p>其中 $d_k$ 是键向量的维度。引入缩放因子 $\\frac{1}{\\sqrt{d_k}}$ 的关键原因在于：当维度较大时，点积结果的量级增大，导致进入 Softmax 函数后处于极小梯度的饱和区域，从而产生梯度消失现象。</p>
+<p>其中 <span data-katex-display="inline" data-latex="d_k"></span> 是键向量的维度。引入缩放因子 <span data-katex-display="inline" data-latex="\frac{1}{\sqrt{d_k}}"></span> 的关键原因在于：当维度较大时，点积结果的量级增大，导致进入 Softmax 函数后处于极小梯度的饱和区域，从而产生梯度消失现象。</p>
 
 <h2>2. 多头注意力机制 (Multi-Head Attention)</h2>
 <p>多头注意力允许模型同时关注不同位置上不同表征子空间的信息：</p>
@@ -193,10 +193,25 @@ interface NotebookState {
   getNotebook: (id: string) => Notebook | undefined;
 }
 
+function normalizeNotebookMath(content: string): string {
+  if (!content) return content;
+  // Convert $$...$$ blocks
+  let res = content.replace(/<p>\s*\$\$([\s\S]+?)\$\$\s*<\/p>/g, (_m, latex) => {
+    return `<div data-katex-display="block" data-latex="${latex.trim()}"></div>`;
+  });
+  // Convert inline $...$
+  res = res.replace(/(?<!\$)\$([^$\n<]+?)\$(?!\$)/g, (_m, latex) => {
+    return `<span data-katex-display="inline" data-latex="${latex.trim()}"></span>`;
+  });
+  return res;
+}
+
 export const useNotebookStore = create<NotebookState>((set, get) => {
   // Load from localStorage or defaults
   const stored = localStorage.getItem(STORAGE_KEY);
-  const initialNotebooks: Notebook[] = stored ? JSON.parse(stored) : DEFAULT_NOTEBOOKS;
+  const initialNotebooks: Notebook[] = stored
+    ? JSON.parse(stored).map((nb: Notebook) => ({ ...nb, content: normalizeNotebookMath(nb.content) }))
+    : DEFAULT_NOTEBOOKS;
 
   const saveToStorage = (list: Notebook[]) => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
