@@ -139,9 +139,16 @@ export const EditorToolbar: React.FC<EditorToolbarProps> = ({
         <button
           onClick={() => {
             if (editor.isActive('image')) {
-              editor.commands.updateAttributes('image', { alignment: 'center' });
+              const currentAlign = editor.getAttributes('image').alignment || 'center';
+              const nextAlign = currentAlign === 'center' ? 'left' : 'center';
+              editor.commands.updateAttributes('image', { alignment: nextAlign });
             } else {
-              editor.chain().focus().setTextAlign('center').run();
+              const isCentered = editor.isActive({ textAlign: 'center' });
+              if (isCentered) {
+                editor.chain().focus().setTextAlign('left').run();
+              } else {
+                editor.chain().focus().setTextAlign('center').run();
+              }
             }
           }}
           className={`p-1.5 rounded-lg border transition-all ${
@@ -149,7 +156,7 @@ export const EditorToolbar: React.FC<EditorToolbarProps> = ({
               ? 'bg-[#FAF0ED] text-[#C97B63] border-[#F0D5CD]'
               : 'text-[#58544E] hover:bg-[#F3EBDD] border-transparent'
           }`}
-          title="居中对齐 (Cmd+E)"
+          title="居中 / 靠左切换 (Cmd+E)"
         >
           <AlignCenter className="w-3.5 h-3.5" />
         </button>

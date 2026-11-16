@@ -128,13 +128,20 @@ export const EditorView: React.FC<EditorViewProps> = ({ notebookId }) => {
           return true;
         }
 
-        // 2. Shortcut Cmd + E for Center Align (Image or Text)
+        // 2. Shortcut Cmd + E for Center / Left Align Toggle (Image or Text)
         if (isCmd && (event.key === 'e' || event.key === 'E') && !event.shiftKey) {
           event.preventDefault();
           if (editor?.isActive('image')) {
-            editor.commands.updateAttributes('image', { alignment: 'center' });
+            const currentAlign = editor.getAttributes('image').alignment || 'center';
+            const nextAlign = currentAlign === 'center' ? 'left' : 'center';
+            editor.commands.updateAttributes('image', { alignment: nextAlign });
           } else {
-            editor?.chain().focus().setTextAlign('center').run();
+            const isCentered = editor?.isActive({ textAlign: 'center' });
+            if (isCentered) {
+              editor?.chain().focus().setTextAlign('left').run();
+            } else {
+              editor?.chain().focus().setTextAlign('center').run();
+            }
           }
           return true;
         }
@@ -364,9 +371,16 @@ export const EditorView: React.FC<EditorViewProps> = ({ notebookId }) => {
       } else if (isCmd && (e.key === 'e' || e.key === 'E') && !e.shiftKey) {
         e.preventDefault();
         if (editor?.isActive('image')) {
-          editor.commands.updateAttributes('image', { alignment: 'center' });
+          const currentAlign = editor.getAttributes('image').alignment || 'center';
+          const nextAlign = currentAlign === 'center' ? 'left' : 'center';
+          editor.commands.updateAttributes('image', { alignment: nextAlign });
         } else {
-          editor?.chain().focus().setTextAlign('center').run();
+          const isCentered = editor?.isActive({ textAlign: 'center' });
+          if (isCentered) {
+            editor?.chain().focus().setTextAlign('left').run();
+          } else {
+            editor?.chain().focus().setTextAlign('center').run();
+          }
         }
       }
     };

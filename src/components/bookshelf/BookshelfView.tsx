@@ -68,53 +68,38 @@ export const BookshelfView: React.FC = () => {
               <div
                 key={nb.id}
                 onClick={() => openNotebook(nb.id)}
-                className="group relative flex flex-col justify-between min-h-[220px] rounded-2xl border border-[#E8DFD1] bg-white hover:border-[#F0D5CD] hover:shadow-xs transition-all overflow-hidden cursor-pointer p-5"
+                className="group relative flex flex-col justify-between min-h-[200px] rounded-2xl border border-[#E8DFD1] bg-white hover:border-[#F0D5CD] hover:shadow-xs transition-all overflow-hidden cursor-pointer p-6"
               >
-                {/* Book Spine Bar & Top Meta */}
-                <div>
-                  <div className="flex items-center justify-between mb-3">
-                    <span
-                      className="px-2.5 py-0.5 rounded-full text-[11px] font-medium border"
-                      style={{
-                        backgroundColor: palette.bgColor,
-                        color: palette.textColor,
-                        borderColor: palette.borderColor,
-                      }}
-                    >
-                      {palette.label}
-                    </span>
+                {/* Delete Button on Hover */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (confirm(`确定删除笔记本《${nb.title}》吗？`)) {
+                      deleteNotebook(nb.id);
+                    }
+                  }}
+                  className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 p-1.5 rounded-lg text-[#A4A09A] hover:text-[#C97B63] hover:bg-[#FAF0ED] transition-all z-10"
+                  title="删除笔记本"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
 
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (confirm(`确定删除笔记本《${nb.title}》吗？`)) {
-                          deleteNotebook(nb.id);
-                        }
-                      }}
-                      className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg text-[#A4A09A] hover:text-[#C97B63] hover:bg-[#FAF0ED] transition-all"
-                      title="删除笔记本"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
+                {/* Notebook Spine Bar, Title & Desc */}
+                <div className="space-y-2 pr-6">
+                  <div className="flex items-start space-x-2.5">
+                    <div
+                      className="w-1.5 h-5 rounded-full flex-shrink-0 mt-0.5"
+                      style={{ backgroundColor: palette.color }}
+                    />
+                    <h3 className="text-sm font-bold text-[#38332B] group-hover:text-[#C97B63] transition-colors line-clamp-2">
+                      {nb.title}
+                    </h3>
                   </div>
-
-                  {/* Notebook Title & Desc */}
-                  <div className="space-y-1.5">
-                    <div className="flex items-start space-x-2">
-                      <div
-                        className="w-1.5 h-6 rounded-full flex-shrink-0 mt-0.5"
-                        style={{ backgroundColor: palette.color }}
-                      />
-                      <h3 className="text-sm font-bold text-[#38332B] group-hover:text-[#C97B63] transition-colors line-clamp-2">
-                        {nb.title}
-                      </h3>
-                    </div>
-                    {nb.description && (
-                      <p className="text-xs text-[#847D72] line-clamp-2 pl-3.5 leading-relaxed">
-                        {nb.description}
-                      </p>
-                    )}
-                  </div>
+                  {nb.description && (
+                    <p className="text-xs text-[#847D72] line-clamp-3 pl-4 leading-relaxed">
+                      {nb.description}
+                    </p>
+                  )}
                 </div>
 
                 {/* Card Footer */}

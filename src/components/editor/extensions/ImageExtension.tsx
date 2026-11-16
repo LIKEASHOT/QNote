@@ -60,11 +60,12 @@ export const ImageComponent: React.FC<NodeViewProps> = (props) => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const isCmd = e.metaKey || e.ctrlKey;
 
-      // Cmd + E: Center alignment
+      // Cmd + E: Toggle Center / Left alignment
       if (isCmd && (e.key === 'e' || e.key === 'E') && !e.shiftKey) {
         e.preventDefault();
         e.stopPropagation();
-        updateAttributes({ alignment: 'center' });
+        const nextAlign = alignment === 'center' ? 'left' : 'center';
+        updateAttributes({ alignment: nextAlign });
         return;
       }
 
@@ -215,13 +216,13 @@ export const ImageComponent: React.FC<NodeViewProps> = (props) => {
 
             <button
               type="button"
-              onClick={() => updateAttributes({ alignment: 'center' })}
+              onClick={() => updateAttributes({ alignment: alignment === 'center' ? 'left' : 'center' })}
               className={`p-1.5 rounded-lg transition-colors ${
                 alignment === 'center'
                   ? 'bg-[#FAF0ED] text-[#C97B63]'
                   : 'text-[#58544E] hover:bg-[#FAF7F2]'
               }`}
-              title="居中对齐 (Cmd+E)"
+              title="居中 / 靠左切换 (Cmd+E)"
             >
               <AlignCenter className="w-3.5 h-3.5" />
             </button>
