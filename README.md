@@ -66,7 +66,7 @@
 单篇无限延展的长卷设计，左侧目录与阅读位置实时双向高亮跟随，智能语法高亮代码块让技术笔记清晰有条理：
 
 <div align="center">
-  <img src="./docs/images/qnote-editor-code.jpg" alt="QNote 长卷编辑器与代码块" width="90%" />
+  <img src="./docs/images/qnote-editor-code.png" alt="QNote 长卷编辑器与代码块" width="90%" />
 </div>
 
 ---

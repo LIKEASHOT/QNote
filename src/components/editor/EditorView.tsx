@@ -41,6 +41,9 @@ export const EditorView: React.FC<EditorViewProps> = ({ notebookId }) => {
   } | null>(null);
 
   const editorContainerRef = useRef<HTMLDivElement>(null);
+  const paperCardRef = useRef<HTMLDivElement>(null);
+  const zoomRef = useRef<number>(notebook?.zoomLevel || 1.0);
+  const rafIdRef = useRef<number | null>(null);
 
   // Extract headings from editor HTML or DOM
   const updateOutline = useCallback((editorInstance: any) => {
@@ -93,7 +96,7 @@ export const EditorView: React.FC<EditorViewProps> = ({ notebookId }) => {
     },
     editorProps: {
       attributes: {
-        class: 'focus:outline-none max-w-none transition-all',
+        class: 'focus:outline-none max-w-none',
       },
       handlePaste: (_view, event) => {
         const clipboard = event.clipboardData;
@@ -176,44 +179,48 @@ export const EditorView: React.FC<EditorViewProps> = ({ notebookId }) => {
     }
   }, [notebookId, editor, notebook, updateOutline]);
 
-  // Handle Trackpad Two-Finger Pinch-to-Zoom (macOS wheel with ctrlKey or gesture events)
+  // Sync zoomRef and DOM when zoomLevel state changes (e.g. from buttons or initial load)
+  useEffect(() => {
+    zoomRef.current = zoomLevel;
+    if (paperCardRef.current) {
+      paperCardRef.current.style.zoom = String(zoomLevel);
+    }
+  }, [zoomLevel]);
+
+  // Handle Trackpad Two-Finger Pinch-to-Zoom with smooth 120Hz continuous response
   useEffect(() => {
     const handleWheel = (e: WheelEvent) => {
       // macOS trackpad pinch emits wheel event with ctrlKey = true
       if (e.ctrlKey) {
         e.preventDefault();
-        // Negative deltaY is pinch out (zoom in), positive deltaY is pinch in (zoom out)
-        const zoomDelta = -e.deltaY * 0.005;
-        setZoomLevel((prev) => {
-          const next = Math.round(Math.min(2.5, Math.max(0.6, prev + zoomDelta)) * 100) / 100;
-          return next;
-        });
-      }
-    };
 
-    const handleGestureStart = (e: Event) => {
-      e.preventDefault();
-    };
+        // Continuous stepless exponential scaling
+        // e.deltaY is typically -1 to -8 (zoom in) or 1 to 8 (zoom out)
+        const scaleFactor = Math.pow(0.9985, e.deltaY);
+        const nextZoom = Math.min(2.5, Math.max(0.6, zoomRef.current * scaleFactor));
+        zoomRef.current = nextZoom;
 
-    const handleGestureChange = (e: any) => {
-      e.preventDefault();
-      if (e.scale) {
-        setZoomLevel((prev) => {
-          const factor = e.scale > 1 ? 1.02 : 0.98;
-          const next = Math.round(Math.min(2.5, Math.max(0.6, prev * factor)) * 100) / 100;
-          return next;
-        });
+        // Apply immediately to DOM for direct hardware responsiveness without transition delay
+        if (paperCardRef.current) {
+          paperCardRef.current.style.zoom = String(nextZoom);
+        }
+
+        // Batch React state update to animation frame so UI percentage indicator syncs smoothly
+        if (rafIdRef.current === null) {
+          rafIdRef.current = requestAnimationFrame(() => {
+            setZoomLevel(Math.round(zoomRef.current * 100) / 100);
+            rafIdRef.current = null;
+          });
+        }
       }
     };
 
     window.addEventListener('wheel', handleWheel, { passive: false });
-    window.addEventListener('gesturestart', handleGestureStart, { passive: false });
-    window.addEventListener('gesturechange', handleGestureChange, { passive: false });
-
     return () => {
       window.removeEventListener('wheel', handleWheel);
-      window.removeEventListener('gesturestart', handleGestureStart);
-      window.removeEventListener('gesturechange', handleGestureChange);
+      if (rafIdRef.current !== null) {
+        cancelAnimationFrame(rafIdRef.current);
+      }
     };
   }, []);
 
@@ -374,10 +381,12 @@ export const EditorView: React.FC<EditorViewProps> = ({ notebookId }) => {
         >
           {/* Centered Parchment Paper Document Layout */}
           <div
-            className="max-w-[860px] mx-auto min-h-[85vh] bg-white rounded-2xl p-8 sm:p-14 border border-[#E8DFD1] shadow-2xs transition-all duration-75 origin-top"
+            ref={paperCardRef}
+            className="max-w-[860px] mx-auto min-h-[85vh] bg-white rounded-2xl p-8 sm:p-14 border border-[#E8DFD1] shadow-2xs origin-top"
             style={{
               fontSize: `${fontSize}px`,
               zoom: zoomLevel,
+              transition: 'none',
             }}
           >
             {/* Bubble Menu for text selection */}
