@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
+import { TextSelection } from '@tiptap/pm/state';
 import StarterKit from '@tiptap/starter-kit';
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight';
 import Table from '@tiptap/extension-table';
@@ -32,6 +33,7 @@ export const EditorView: React.FC<EditorViewProps> = ({ notebookId }) => {
   const notebook = getNotebook(notebookId);
 
   const [fontSize, setFontSize] = useState<number>(notebook?.fontSize || 16);
+  const [lineHeight, setLineHeight] = useState<number>(notebook?.lineHeight || 1.65);
   const [zoomLevel, setZoomLevel] = useState<number>(notebook?.zoomLevel || 1.0);
   const [outline, setOutline] = useState<OutlineItem[]>([]);
   const [activeHeadingId, setActiveHeadingId] = useState<string | null>(null);
@@ -65,12 +67,20 @@ export const EditorView: React.FC<EditorViewProps> = ({ notebookId }) => {
     extensions: [
       StarterKit.configure({
         codeBlock: false,
+        code: {
+          HTMLAttributes: {
+            spellcheck: 'false',
+          },
+        },
         heading: {
           levels: [1, 2, 3, 4, 5, 6],
         },
       }),
       CodeBlockLowlight.configure({
         lowlight,
+        HTMLAttributes: {
+          spellcheck: 'false',
+        },
       }),
       Table.configure({
         resizable: true,
@@ -100,6 +110,80 @@ export const EditorView: React.FC<EditorViewProps> = ({ notebookId }) => {
     editorProps: {
       attributes: {
         class: 'focus:outline-none max-w-none',
+        spellcheck: 'false',
+        autocorrect: 'off',
+        autocapitalize: 'off',
+      },
+      handleKeyDown: (view, event) => {
+        // 1. Shortcut Cmd + > for quote / terracotta callout block
+        const isCmd = event.metaKey || event.ctrlKey;
+        if (
+          isCmd &&
+          (event.key === '>' ||
+            event.key === '》' ||
+            (event.shiftKey && (event.key === '.' || event.key === '。' || event.code === 'Period')))
+        ) {
+          event.preventDefault();
+          editor?.chain().focus().toggleBlockquote().run();
+          return true;
+        }
+
+        // 2. Auto Ordered List recognition on Enter:
+        // When the user writes "1. 文字" or "1.文字" or "1、文字" and presses Enter,
+        // automatically convert to native ordered list, create item 2, and support Cmd+Z undo
+        if (event.key === 'Enter' && !event.shiftKey && !event.isComposing) {
+          const { state } = view;
+          const { selection } = state;
+          const { $from } = selection;
+          const node = $from.parent;
+
+          if (node.type.name === 'paragraph' && $from.depth === 1) {
+            const text = node.textContent;
+            const match = text.match(/^(\d+)[.、]\s*(.*)$/);
+            if (match) {
+              event.preventDefault();
+              const num = parseInt(match[1], 10);
+              const prefixMatch = text.match(/^(\d+)[.、]\s*/);
+              const prefixLength = prefixMatch ? prefixMatch[0].length : 2;
+
+              const { tr } = state;
+              const start = $from.before();
+              const end = $from.after();
+              const { orderedList, listItem, paragraph } = state.schema.nodes;
+
+              if (orderedList && listItem && paragraph) {
+                const cursorOffset = $from.parentOffset;
+                let item1Content;
+                let item2Content;
+
+                if (cursorOffset >= node.content.size) {
+                  // Cursor is at the end of the line
+                  item1Content = node.content.cut(Math.min(prefixLength, node.content.size));
+                  item2Content = undefined;
+                } else if (cursorOffset <= prefixLength) {
+                  // Cursor is before or inside the prefix
+                  item1Content = undefined;
+                  item2Content = node.content.cut(Math.min(prefixLength, node.content.size));
+                } else {
+                  // Cursor is in the middle of content
+                  item1Content = node.content.cut(prefixLength, cursorOffset);
+                  item2Content = node.content.cut(cursorOffset);
+                }
+
+                const item1 = listItem.create(null, paragraph.create(null, item1Content));
+                const item2 = listItem.create(null, paragraph.create(null, item2Content));
+                const list = orderedList.create({ order: num }, [item1, item2]);
+
+                tr.replaceWith(start, end, list);
+                const pos = start + item1.nodeSize + 2;
+                tr.setSelection(TextSelection.create(tr.doc, pos));
+                view.dispatch(tr.scrollIntoView());
+                return true;
+              }
+            }
+          }
+        }
+        return false;
       },
       handlePaste: (_view, event) => {
         const clipboard = event.clipboardData;
@@ -176,6 +260,9 @@ export const EditorView: React.FC<EditorViewProps> = ({ notebookId }) => {
       }
       updateOutline(editor);
       setFontSize(notebook.fontSize || 16);
+      if (notebook.lineHeight) {
+        setLineHeight(notebook.lineHeight);
+      }
       if (notebook.zoomLevel) {
         setZoomLevel(notebook.zoomLevel);
       }
@@ -256,6 +343,13 @@ export const EditorView: React.FC<EditorViewProps> = ({ notebookId }) => {
       } else if (e.key === '\\') {
         e.preventDefault();
         toggleOutline();
+      } else if (
+        e.key === '>' ||
+        e.key === '》' ||
+        (e.shiftKey && (e.key === '.' || e.key === '。' || e.code === 'Period'))
+      ) {
+        e.preventDefault();
+        editor?.chain().focus().toggleBlockquote().run();
       }
     };
 
@@ -294,6 +388,11 @@ export const EditorView: React.FC<EditorViewProps> = ({ notebookId }) => {
   const handleFontSizeChange = (newSize: number) => {
     setFontSize(newSize);
     updateNotebookSettings(notebookId, { fontSize: newSize });
+  };
+
+  const handleLineHeightChange = (newLineHeight: number) => {
+    setLineHeight(newLineHeight);
+    updateNotebookSettings(notebookId, { lineHeight: newLineHeight });
   };
 
   const handleInsertImage = () => {
@@ -348,6 +447,8 @@ export const EditorView: React.FC<EditorViewProps> = ({ notebookId }) => {
           editor={editor}
           fontSize={fontSize}
           onFontSizeChange={handleFontSizeChange}
+          lineHeight={lineHeight}
+          onLineHeightChange={handleLineHeightChange}
           onInsertImage={handleInsertImage}
           onInsertMath={handleInsertMath}
           onInsertCallout={handleInsertCallout}
@@ -390,6 +491,8 @@ export const EditorView: React.FC<EditorViewProps> = ({ notebookId }) => {
               fontSize: `${fontSize}px`,
               zoom: zoomLevel,
               transition: 'none',
+              ['--editor-line-height' as any]: lineHeight,
+              ['--editor-p-gap' as any]: `${Math.round(lineHeight * 0.25 * 100) / 100}em`,
             }}
           >
             {/* Bubble Menu for text selection */}

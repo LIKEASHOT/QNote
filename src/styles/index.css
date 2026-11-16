@@ -56,11 +56,17 @@
   outline: none !important;
   color: #38332B;
   min-height: 500px;
+  spellcheck: false !important;
+  -webkit-spell-check: none !important;
 }
 
 .tiptap p {
-  margin-bottom: 0.85em;
-  line-height: 1.75;
+  margin-bottom: var(--editor-p-gap, 0.4em);
+  line-height: var(--editor-line-height, 1.65);
+}
+
+.tiptap p:last-child {
+  margin-bottom: 0;
 }
 
 .tiptap h1 {
@@ -120,18 +126,18 @@
 .tiptap ul {
   list-style-type: disc;
   padding-left: 1.5rem;
-  margin-bottom: 0.85em;
+  margin-bottom: var(--editor-p-gap, 0.4em);
 }
 
 .tiptap ol {
   list-style-type: decimal;
   padding-left: 1.5rem;
-  margin-bottom: 0.85em;
+  margin-bottom: var(--editor-p-gap, 0.4em);
 }
 
 .tiptap li {
   margin-bottom: 0.25em;
-  line-height: 1.7;
+  line-height: var(--editor-line-height, 1.65);
 }
 
 .tiptap hr {

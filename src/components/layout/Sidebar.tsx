@@ -97,21 +97,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 }`}
               >
                 <div className="flex items-center space-x-1.5 truncate">
-                  {/* Heading Level Tag */}
+                  {/* Title text */}
                   <span
-                    className={`text-[9px] font-mono px-1 py-0.2 rounded ${
-                      item.level === 1
-                        ? 'bg-[#E8DFD1] text-[#38332B] font-bold'
-                        : item.level === 2
-                        ? 'bg-[#F0E9DF] text-[#58544E]'
-                        : 'text-[#A4A09A]'
+                    className={`truncate text-xs ${
+                      item.level === 1 ? 'font-semibold text-[#38332B]' : 'text-[#58544E]'
                     }`}
                   >
-                    H{item.level}
+                    {item.text || '未命名标题'}
                   </span>
-
-                  {/* Title text */}
-                  <span className="truncate text-xs">{item.text || '未命名标题'}</span>
                 </div>
 
                 {/* Sub-level folding toggle for H1/H2 */}

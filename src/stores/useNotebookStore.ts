@@ -188,7 +188,7 @@ interface NotebookState {
   notebooks: Notebook[];
   createNotebook: (title: string, colorKey: string, description?: string) => Notebook;
   updateNotebookContent: (id: string, content: string) => void;
-  updateNotebookSettings: (id: string, settings: { fontSize?: number; zoomLevel?: number; alignment?: 'left' | 'center' | 'right'; title?: string; colorKey?: string }) => void;
+  updateNotebookSettings: (id: string, settings: { fontSize?: number; lineHeight?: number; zoomLevel?: number; alignment?: 'left' | 'center' | 'right'; title?: string; colorKey?: string }) => void;
   deleteNotebook: (id: string) => void;
   getNotebook: (id: string) => Notebook | undefined;
 }

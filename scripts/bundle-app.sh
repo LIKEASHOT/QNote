@@ -34,7 +34,7 @@ npx electron-packager dist-app QNote \
   --arch=arm64 \
   --out=release \
   --overwrite \
-  --icon=assets/AppIcon.icns \
+  --icon=assets/AppIcon \
   --app-bundle-id=com.qnote.app \
   --app-category-type=public.app-category.productivity
 
