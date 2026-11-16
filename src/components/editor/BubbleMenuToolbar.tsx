@@ -20,6 +20,11 @@ export const BubbleMenuToolbar: React.FC<BubbleMenuProps> = ({ editor }) => {
     <BubbleMenu
       editor={editor}
       tippyOptions={{ duration: 150 }}
+      shouldShow={({ editor, from, to }) => {
+        // Never show text bubble menu when an image or code block is selected, or when selection is empty
+        if (editor.isActive('image') || editor.isActive('codeBlock')) return false;
+        return from !== to;
+      }}
       className="flex items-center space-x-0.5 bg-white/95 backdrop-blur-md px-1.5 py-1 rounded-xl border border-[#E8DFD1] shadow-xl text-xs select-none"
     >
       <button

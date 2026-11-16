@@ -119,9 +119,15 @@ export const EditorToolbar: React.FC<EditorToolbarProps> = ({
 
         {/* Alignment */}
         <button
-          onClick={() => editor.chain().focus().setTextAlign('left').run()}
+          onClick={() => {
+            if (editor.isActive('image')) {
+              editor.commands.updateAttributes('image', { alignment: 'left' });
+            } else {
+              editor.chain().focus().setTextAlign('left').run();
+            }
+          }}
           className={`p-1.5 rounded-lg border transition-all ${
-            editor.isActive({ textAlign: 'left' })
+            editor.isActive({ textAlign: 'left' }) || editor.isActive('image', { alignment: 'left' })
               ? 'bg-[#FAF0ED] text-[#C97B63] border-[#F0D5CD]'
               : 'text-[#58544E] hover:bg-[#F3EBDD] border-transparent'
           }`}
@@ -131,21 +137,33 @@ export const EditorToolbar: React.FC<EditorToolbarProps> = ({
         </button>
 
         <button
-          onClick={() => editor.chain().focus().setTextAlign('center').run()}
+          onClick={() => {
+            if (editor.isActive('image')) {
+              editor.commands.updateAttributes('image', { alignment: 'center' });
+            } else {
+              editor.chain().focus().setTextAlign('center').run();
+            }
+          }}
           className={`p-1.5 rounded-lg border transition-all ${
-            editor.isActive({ textAlign: 'center' })
+            editor.isActive({ textAlign: 'center' }) || editor.isActive('image', { alignment: 'center' })
               ? 'bg-[#FAF0ED] text-[#C97B63] border-[#F0D5CD]'
               : 'text-[#58544E] hover:bg-[#F3EBDD] border-transparent'
           }`}
-          title="居中对齐"
+          title="居中对齐 (Cmd+E)"
         >
           <AlignCenter className="w-3.5 h-3.5" />
         </button>
 
         <button
-          onClick={() => editor.chain().focus().setTextAlign('right').run()}
+          onClick={() => {
+            if (editor.isActive('image')) {
+              editor.commands.updateAttributes('image', { alignment: 'right' });
+            } else {
+              editor.chain().focus().setTextAlign('right').run();
+            }
+          }}
           className={`p-1.5 rounded-lg border transition-all ${
-            editor.isActive({ textAlign: 'right' })
+            editor.isActive({ textAlign: 'right' }) || editor.isActive('image', { alignment: 'right' })
               ? 'bg-[#FAF0ED] text-[#C97B63] border-[#F0D5CD]'
               : 'text-[#58544E] hover:bg-[#F3EBDD] border-transparent'
           }`}

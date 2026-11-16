@@ -7,7 +7,7 @@ import Table from '@tiptap/extension-table';
 import TableRow from '@tiptap/extension-table-row';
 import TableCell from '@tiptap/extension-table-cell';
 import TableHeader from '@tiptap/extension-table-header';
-import Image from '@tiptap/extension-image';
+import { ResizableImage } from './extensions/ImageExtension';
 import TextAlign from '@tiptap/extension-text-align';
 import Placeholder from '@tiptap/extension-placeholder';
 
@@ -88,7 +88,7 @@ export const EditorView: React.FC<EditorViewProps> = ({ notebookId }) => {
       TableRow,
       TableHeader,
       TableCell,
-      Image.configure({
+      ResizableImage.configure({
         inline: false,
         allowBase64: true,
       }),
@@ -128,7 +128,18 @@ export const EditorView: React.FC<EditorViewProps> = ({ notebookId }) => {
           return true;
         }
 
-        // 2. Auto Ordered List recognition on Enter:
+        // 2. Shortcut Cmd + E for Center Align (Image or Text)
+        if (isCmd && (event.key === 'e' || event.key === 'E') && !event.shiftKey) {
+          event.preventDefault();
+          if (editor?.isActive('image')) {
+            editor.commands.updateAttributes('image', { alignment: 'center' });
+          } else {
+            editor?.chain().focus().setTextAlign('center').run();
+          }
+          return true;
+        }
+
+        // 3. Auto Ordered List recognition on Enter:
         // When the user writes "1. 文字" or "1.文字" or "1、文字" and presses Enter,
         // automatically convert to native ordered list, create item 2, and support Cmd+Z undo
         if (event.key === 'Enter' && !event.shiftKey && !event.isComposing) {
@@ -200,7 +211,7 @@ export const EditorView: React.FC<EditorViewProps> = ({ notebookId }) => {
               reader.onload = (e) => {
                 const src = e.target?.result as string;
                 if (src && editor) {
-                  editor.chain().focus().setImage({ src }).run();
+                  editor.chain().focus().setImage({ src, alignment: 'center', width: '100%' } as any).run();
                 }
               };
               reader.readAsDataURL(file);
@@ -350,6 +361,13 @@ export const EditorView: React.FC<EditorViewProps> = ({ notebookId }) => {
       ) {
         e.preventDefault();
         editor?.chain().focus().toggleBlockquote().run();
+      } else if (isCmd && (e.key === 'e' || e.key === 'E') && !e.shiftKey) {
+        e.preventDefault();
+        if (editor?.isActive('image')) {
+          editor.commands.updateAttributes('image', { alignment: 'center' });
+        } else {
+          editor?.chain().focus().setTextAlign('center').run();
+        }
       }
     };
 
@@ -398,7 +416,7 @@ export const EditorView: React.FC<EditorViewProps> = ({ notebookId }) => {
   const handleInsertImage = () => {
     const url = prompt('请输入图片 URL (或直接截图 Cmd+V 粘贴至笔记内):');
     if (url && editor) {
-      editor.chain().focus().setImage({ src: url }).run();
+      editor.chain().focus().setImage({ src: url, alignment: 'center', width: '100%' } as any).run();
     }
   };
 
