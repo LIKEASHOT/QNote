@@ -52,15 +52,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
   // 3. One-click Expand All / Collapse All
   const areAllCollapsed = useMemo(() => {
     if (outline.length === 0) return false;
-    let parentCount = 0;
-    let collapsedParentCount = 0;
+    let targetCount = 0;
+    let collapsedCount = 0;
     for (const item of outline) {
-      if (hasChildrenMap.get(item.id)) {
-        parentCount++;
-        if (collapsedIds.has(item.id)) collapsedParentCount++;
+      if (item.level <= 2 || hasChildrenMap.get(item.id)) {
+        targetCount++;
+        if (collapsedIds.has(item.id)) collapsedCount++;
       }
     }
-    return parentCount > 0 && collapsedParentCount === parentCount;
+    return targetCount > 0 && collapsedCount === targetCount;
   }, [outline, hasChildrenMap, collapsedIds]);
 
   const toggleAllCollapse = () => {
@@ -68,14 +68,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
       // Expand all
       setCollapsedIds(new Set());
     } else {
-      // Collapse all headings that have children
-      const allParents = new Set<string>();
+      // Collapse all headings that show arrows
+      const allTargets = new Set<string>();
       outline.forEach((item) => {
-        if (hasChildrenMap.get(item.id)) {
-          allParents.add(item.id);
+        if (item.level <= 2 || hasChildrenMap.get(item.id)) {
+          allTargets.add(item.id);
         }
       });
-      setCollapsedIds(allParents);
+      setCollapsedIds(allTargets);
     }
   };
 
@@ -183,6 +183,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           displayItems.map((item) => {
             const isActive = activeHeadingId === item.id;
             const hasChildren = Boolean(hasChildrenMap.get(item.id));
+            const showArrow = item.level <= 2 || hasChildren;
             const isCollapsed = collapsedIds.has(item.id);
 
             // Indentation by level:
@@ -206,13 +207,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     : 'hover:bg-[#F3EBDD]/60 border-l-2 border-transparent'
                 }`}
               >
-                {/* 1. Left Arrow (IDE style: permanently visible for parent headings) */}
-                {hasChildren ? (
+                {/* 1. Left Arrow (IDE style: permanently visible for H1, H2, and parent headings) */}
+                {showArrow ? (
                   <button
                     type="button"
                     onClick={(e) => toggleCollapse(item.id, e)}
                     className="w-4 h-4 flex items-center justify-center rounded hover:bg-[#E8DFD1] text-[#787168] hover:text-[#26221D] mr-1 flex-shrink-0 transition-colors"
-                    title={isCollapsed ? '展开子节' : '折叠子节'}
+                    title={isCollapsed ? '展开' : '折叠'}
                   >
                     {isCollapsed ? (
                       <ChevronRight className="w-3.5 h-3.5" />
