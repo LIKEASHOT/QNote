@@ -13,14 +13,13 @@ import { OutlineItem } from '../../types';
 
 interface SidebarProps {
   outline: OutlineItem[];
-  activeHeadingId: string | null;
+  activeHeadingId?: string | null;
   onSelectHeading: (item: OutlineItem) => void;
   notebookTitle?: string;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
   outline,
-  activeHeadingId,
   onSelectHeading,
   notebookTitle,
 }) => {
@@ -181,7 +180,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </div>
         ) : (
           displayItems.map((item) => {
-            const isActive = activeHeadingId === item.id;
             const hasChildren = Boolean(hasChildrenMap.get(item.id));
             const showArrow = item.level <= 2 || hasChildren;
             const isCollapsed = collapsedIds.has(item.id);
@@ -201,11 +199,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 style={{ paddingLeft: `${indentPx}px` }}
                 className={`group relative flex items-center py-1.5 pr-2 rounded-lg cursor-pointer transition-colors ${
                   item.level === 1 ? 'mt-1.5 first:mt-0' : 'mt-0.5'
-                } ${
-                  isActive
-                    ? 'bg-[#FAF0ED] text-[#C97B63] border-l-2 border-[#C97B63]'
-                    : 'hover:bg-[#F3EBDD]/60 border-l-2 border-transparent'
-                }`}
+                } hover:bg-[#F3EBDD]/60 border-l-2 border-transparent`}
               >
                 {/* 1. Left Arrow (IDE style: permanently visible for H1, H2, and parent headings) */}
                 {showArrow ? (
@@ -223,26 +217,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   </button>
                 ) : (
                   <div className="w-4 h-4 flex items-center justify-center mr-1 flex-shrink-0">
-                    <span
-                      className={`w-1 h-1 rounded-full transition-colors ${
-                        isActive
-                          ? 'bg-[#C97B63]'
-                          : 'bg-[#D5C7B5] group-hover:bg-[#A49C90]'
-                      }`}
-                    />
+                    <span className="w-1 h-1 rounded-full bg-[#D5C7B5] group-hover:bg-[#A49C90] transition-colors" />
                   </div>
                 )}
 
                 {/* 2. Title Text with clear H1 vs H2 vs H3 typographic hierarchy */}
                 <span
                   className={`truncate flex-1 ${
-                    isActive
-                      ? item.level === 1
-                        ? 'text-[13px] font-bold text-[#C97B63]'
-                        : item.level === 2
-                        ? 'text-[12px] font-semibold text-[#C97B63]'
-                        : 'text-[11.5px] font-medium text-[#C97B63]'
-                      : item.level === 1
+                    item.level === 1
                       ? 'text-[13px] font-bold text-[#26221D] group-hover:text-[#181412]'
                       : item.level === 2
                       ? 'text-[12px] font-medium text-[#554E46] group-hover:text-[#26221D]'

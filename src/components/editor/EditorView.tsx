@@ -36,12 +36,20 @@ export const EditorView: React.FC<EditorViewProps> = ({ notebookId }) => {
   const [lineHeight, setLineHeight] = useState<number>(notebook?.lineHeight || 1.65);
   const [zoomLevel, setZoomLevel] = useState<number>(notebook?.zoomLevel || 1.0);
   const [outline, setOutline] = useState<OutlineItem[]>([]);
-  const [activeHeadingId, setActiveHeadingId] = useState<string | null>(null);
   const [isMathOpen, setIsMathOpen] = useState(false);
   const [detectedCodeToast, setDetectedCodeToast] = useState<{
     language: string;
     rawText: string;
   } | null>(null);
+
+  // Auto-dismiss code detection toast after 3 seconds
+  useEffect(() => {
+    if (!detectedCodeToast) return;
+    const timer = setTimeout(() => {
+      setDetectedCodeToast(null);
+    }, 3000);
+    return () => clearTimeout(timer);
+  }, [detectedCodeToast]);
 
   const editorContainerRef = useRef<HTMLDivElement>(null);
   const paperCardRef = useRef<HTMLDivElement>(null);
@@ -389,26 +397,7 @@ export const EditorView: React.FC<EditorViewProps> = ({ notebookId }) => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [editor, toggleOutline]);
 
-  // Scroll spy: highlight current visible heading in outline
-  const handleScroll = useCallback(() => {
-    if (!editorContainerRef.current) return;
-    const headings = editorContainerRef.current.querySelectorAll('h1, h2, h3, h4');
-    const containerTop = editorContainerRef.current.scrollTop + 60;
-
-    let currentId: string | null = null;
-    headings.forEach((heading, idx) => {
-      const el = heading as HTMLElement;
-      if (el.offsetTop <= containerTop) {
-        const item = outline[idx];
-        if (item) currentId = item.id;
-      }
-    });
-
-    if (currentId) setActiveHeadingId(currentId);
-  }, [outline]);
-
   const handleSelectHeading = (item: OutlineItem) => {
-    setActiveHeadingId(item.id);
     if (!editorContainerRef.current) return;
     const headings = editorContainerRef.current.querySelectorAll('h1, h2, h3, h4');
     const target = Array.from(headings).find((h) => h.textContent?.trim() === item.text.trim());
@@ -466,7 +455,6 @@ export const EditorView: React.FC<EditorViewProps> = ({ notebookId }) => {
       {isOutlineOpen && (
         <Sidebar
           outline={outline}
-          activeHeadingId={activeHeadingId}
           onSelectHeading={handleSelectHeading}
           notebookTitle={notebook.title}
         />
@@ -486,9 +474,9 @@ export const EditorView: React.FC<EditorViewProps> = ({ notebookId }) => {
           onInsertCallout={handleInsertCallout}
         />
 
-        {/* Floating Code Detection Toast */}
+        {/* Floating Code Detection Toast (auto-dismisses after 3s) */}
         {detectedCodeToast && (
-          <div className="absolute top-12 right-6 z-30 flex items-center space-x-2 bg-white/95 backdrop-blur-md px-3 py-2 rounded-xl border border-[#F0D5CD] shadow-lg text-xs animate-in slide-in-from-top-2">
+          <div className="absolute top-12 right-6 z-30 flex items-center space-x-2 bg-white/95 backdrop-blur-md px-3 py-2 rounded-xl border border-[#F0D5CD] shadow-lg text-xs animate-in fade-in slide-in-from-top-2 duration-200">
             <Code2 className="w-4 h-4 text-[#C97B63]" />
             <span className="text-[#38332B]">
               已智能识别并包裹为 <strong>{detectedCodeToast.language}</strong> 代码块
@@ -512,7 +500,6 @@ export const EditorView: React.FC<EditorViewProps> = ({ notebookId }) => {
         {/* Continuous Canvas Scrollable Area */}
         <div
           ref={editorContainerRef}
-          onScroll={handleScroll}
           className="flex-1 overflow-auto px-6 sm:px-12 md:px-20 py-10 relative"
         >
           {/* Centered Parchment Paper Document Layout */}
